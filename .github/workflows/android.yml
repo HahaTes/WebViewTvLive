@@ -1,26 +1,43 @@
-name: Android CI
-
+name: Java项目编译Debug APK
+# 触发条件：1.网页端手动触发 2.main分支推送 3.main分支PR
 on:
+  workflow_dispatch:
+    inputs:
+      build-note:
+        description: '编译备注（可选）'
+        required: false
+        default: '网页端手动触发编译'
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
-  build:
-
+  build-debug-apk:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
+      - name: 拉取项目代码
+        uses: actions/checkout@v4
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
+      # 关键修改：将JDK从17降级为11（适配低版本Gradle）
+      - name: 安装JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11' # 改为Java 11，解决Gradle兼容问题
+          distribution: 'temurin'
+          cache: gradle # 缓存Gradle依赖，加速编译
+
+      - name: 打印编译备注（若有）
+        run: echo "当前编译备注：${{ github.event.inputs.build-note }}"
+
+      - name: 执行Gradle编译命令
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: assembleDebug # 保持Debug编译，无需签名
+
+      - name: 上传Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Java-App-Debug-APK
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 7
