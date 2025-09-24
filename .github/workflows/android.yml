@@ -19,11 +19,10 @@ jobs:
       - name: 拉取项目代码
         uses: actions/checkout@v4
 
-      # 关键修改：将JDK从17降级为11（适配低版本Gradle）
-      - name: 安装JDK 11
+      - name: 安装JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '11' # 改为Java 11，解决Gradle兼容问题
+          java-version: '17' # 改为Java 11，解决Gradle兼容问题
           distribution: 'temurin'
           cache: gradle # 缓存Gradle依赖，加速编译
 
@@ -38,6 +37,6 @@ jobs:
       - name: 上传Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: Java-App-Debug-APK
+          name: WebTv-Debug-NoSign-APK
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 7
